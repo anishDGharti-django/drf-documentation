@@ -1,0 +1,70 @@
+"Machine interacting web services tend to use more structured formats for sending data than form-encoded,
+ since they're sending more complex data than simple forms"
+
+
+
+In Django REST Framework (DRF), a Parser is a component that is responsible for parsing the content of incoming 
+HTTP requests. Parsers determine how the request data is processed and converted into a format that Django views 
+can work with. This is especially important for APIs that need to handle various content types such as JSON, XML, 
+or form data.
+
+
+
+
+
+How the parser is determined ???
+The set of valid parsers for a view is always defined as a list of classes. When request.data is accessed, 
+REST framework will examine the Content-Type header on the incoming request, and determine which parser to
+use to parse the request content.
+
+
+Note: When developing client applications always remember to make sure you're setting the Content-Type header
+when sending data in an HTTP request.If you don't set the content type, most clients will default to using
+'application/x-www-form-urlencoded', which may not be what you wanted.As an example, if you are sending json
+encoded data using jQuery with the .ajax() method, you should make sure to include the contentType: 'application/json'
+setting.
+
+
+
+
+Setting the parsers
+The default set of parsers may be set globally, using the DEFAULT_PARSER_CLASSES setting.
+For example, the following settings would allow only requests with JSON content, instead of the default of JSON or form data.
+REST_FRAMEWORK = {
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ]
+}
+
+
+
+
+You can also set the parsers used for an individual view, or viewset, using the APIView class-based views.
+
+from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+class ExampleView(APIView):
+    """
+    A view that can accept POST requests with JSON content.
+    """
+    parser_classes = [JSONParser]
+
+    def post(self, request, format=None):
+        return Response({'received data': request.data})
+
+
+Or, if you're using the @api_view decorator with function based views.
+
+from rest_framework.decorators import api_view
+from rest_framework.decorators import parser_classes
+from rest_framework.parsers import JSONParser
+
+@api_view(['POST'])
+@parser_classes([JSONParser])
+def example_view(request, format=None):
+    """
+    A view that can accept POST requests with JSON content.
+    """
+    return Response({'received data': request.data})
